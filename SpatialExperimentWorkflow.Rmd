@@ -1,0 +1,357 @@
+---
+title: "SpatialAnalysisWorkflow"
+author: "Dario Righelli"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+vignette: >
+    %\VignetteIndexEntry{Spatial Analysis Workflow}
+    %\VignetteEncoding{UTF-8}
+    %\VignetteEngine{knitr::rmarkdown}
+bibliography: inst/REFERENCES.bib
+editor_options: 
+  chunk_output_type: console
+---
+
+
+
+# Introduction
+
+Spatial transcriptomics technologies produce spatial coordinates and transcripts quantification for cells in a predefined tissue.
+
+Several of them are emerging, but we focused on **seqFISH** and 
+**10x Genomics Visium Transcriptomics**.
+
+seqFISH:
+
++ Temporal barcodes multiple hybridization rounds allows the detection of cells spatial coordinates by aid of microscopy fluorescent imaging.
++  Transcripts abundance is detected as the number of colocalizing spots per each transcript (no cDNA or PCR amplification needed).
++ Can be combined with other scRNA-seq datasets for scMultiModal integration.
+
+
+```{r, echo=FALSE, out.width="45%", out.height="45%", fig.align="center", fig.cap="seqFISH Hybridization"}
+knitr::include_graphics("imgs/seqfish.png")
+```
+
+10x Genomics Visium Transcriptomics:
+
++ A tissue slice is placed on a barcoded-spotted chip.
++  Microscopy imaging of the tissue is taken while each spot provides cDNA amplification.
++ Spatial coordinates are associated to each spot.
+
+
+```{r, echo=FALSE, out.width="40%", out.height="40%", fig.align="center", fig.cap="10x Visium Breast Cancer"}
+knitr::include_graphics("imgs/visium2.jpg")
+```
+
+We developed two different classes for the spatial data handling, releasing them
+into the *SpatialExperiment* Bioconductor package.
+
+```{r, echo=FALSE, out.width="15%", out.height="15%", fig.align="center", fig.cap="SpatialExperiment Sticker"}
+knitr::include_graphics("imgs/spatialExperimentSticker.png")
+```
+
+
+The first one is the **SpatialExperiment** class which inherits from the *SingleCellExperiment* class,
+extending it with ad-hoc designed *slots*, *getter* and *setter* methods.
+
+
+```{r, echo=FALSE, out.width="40%", out.height="40%", fig.align="center"}
+knitr::include_graphics("imgs/SpatialExperimentScheme1.1.png")
+```
+
+The second one is the **VisiumExperiment** class which inherits from the *SpatialExperiment* class, 
+extending it with other *slots* and *methods*, suited for the *10x Genomics Visium Transcriptomics* data.
+
+
+```{r, echo=FALSE, out.width="50%", out.height="50%", fig.align="center"}
+  knitr::include_graphics("imgs/VisiumExperimentv1.png")
+```
+
+# Loading libraries
+
+
+```{r,include=TRUE, results="hide", message=FALSE, warning=FALSE}
+library(MultiAssayExperiment)
+library(SpatialExperiment)
+library(SingleCellMultiModal)
+library(SingleR)
+library(scater)
+library(celldex)
+library(RColorBrewer)
+library(spatzli)
+```
+
+# SpatialExperiment class and seq-FISH dataset
+
+We start to illustrate how to use the **SpatialExperiment** class by using a *seqFISH* dataset that we stored
+into the SingleCellMultiModal (SCMM) Bioconductor  ExperimentHub package.
+This is partially included into the seqFISH vignettes of the SCMM package.
+
+The dataset consists of two data types, 
+seq-FISH data was provided by @Zhu2018identification, while scRNA-seq data
+was provided by @Tasic2016adult.
+
+Data have been retrieved as part of the 
+[Hackathon](https://github.com/BIRSBiointegration/Hackathon/tree/master/seqFISH)
+in the 
+[Mathematical Frameworks for Integrative Analysis of Emerging Biological DataTypes](https://www.birs.ca/events/2020/5-day-workshops/20w5197) workshop.
+
+## Downloading dataset
+
+The dataset has been released in two different versions, version 1.0.0 where the 
+scRNA-seq data are the unprocessed ones, as downloadable from the GEO database.
+While version 2.0.0 indicates the scRNA-seq data processed for the hackathon.
+seqFISH data are always the same, as for version 1.0.0 as for version 2.0.0.
+
+To download the dataset just run:
+
+```{r, message=FALSE}
+mse <- SingleCellMultiModal::seqFISH(DataType="mouse_visual_cortex", 
+                        modes="*", dry.run=FALSE, version="2.0.0")
+mse
+```
+
+It returns a MultiAssayExperiment object within a SingleCellExperiment object with 
+scRNA-seq data and a SpatialExperiment object with seqFISH data.
+
+
+```{r}
+experiments(mse)
+```
+
+
+## Exploring the data structure
+
+Check row annotations:
+
+```{r}
+rownames(mse)
+```
+
+Take a peek at the `sampleMap`:
+
+```{r}
+sampleMap(mse)
+```
+
+
+## scRNA-seq data
+
+The scRNA-seq data are accessible with `$scRNAseq`, which returns a 
+*SingleCellExperiment* class object, with all its associated methods.
+
+```{r}
+experiments(mse)$scRNAseq
+```
+
+Otherwise the `assay` function can be used to access the *scRNAseq* assay
+stored in the `mse` *MultiAssayExperiment* object.
+
+```{r}
+head(assay(mse, "scRNAseq"))[,1:4]
+```
+
+## seq-FISH data
+
+The seq-FISH data are accessible with `$seqFISH`, which returns a 
+**SpatialExperiment** class object.
+
+```{r}
+experiments(mse)$seqFISH
+```
+
+Otherwhise the `assay` function can be used to access the *seqFISH* assay
+stored in the `mse` *MultiAssayExperiment* object.
+
+```{r}
+head(assay(mse, "seqFISH"))[,1:4]
+```
+
+Spatial coordinates can be retrieved with `spatialCoords` function on the 
+*SpatialExperiment* object.
+
+```{r}
+(sc <- spatialCoords(experiments(mse)$seqFISH))
+```
+
+They can also be stored by using the `<-` operator.
+
+```{r}
+fakeCoords <- cbind(sc[,c(1:3)], sc[,3])
+colnames(fakeCoords)[4] <- "y"
+spatialCoords(experiments(mse)$seqFISH) <- fakeCoords
+spatialCoords(experiments(mse)$seqFISH)
+```
+
+Direct access to the colnames of the spacial coordinates with
+`spatialCoordsNames` function.
+
+```{r}
+spatialCoordsNames(experiments(mse)$seqFISH)
+```
+
+
+
+
+# VisiumExperiment class and Breast Cancer dataset
+
+Examples data files have been downloaded from the 10x site, [Human Breast Cancer](https://support.10xgenomics.com/spatial-gene-expression/datasets/1.1.0/V1_Breast_Cancer_Block_A_Section_1)
+
+## Features
+
+Loading features and count matrix.
+
+```{r}
+barcodes <- read.csv("data/visium/V1_Breast_cancer/raw_feature_bc_matrix/barcodes.tsv", sep="\t", 
+                     header=FALSE, col.names=c("Barcodes"))
+features <- read.csv("data/visium/V1_Breast_cancer/raw_feature_bc_matrix/features.tsv", sep="\t", 
+                     header=FALSE, col.names=c("Feature_ID", "Feature_name", 
+                                               "Feature_type"))
+# library("Matrix")
+# counts <- readMM(file="data/visium/V1_Breast_cancer/raw_feature_bc_matrix/matrix_good.mtx")
+counts <- readRDS("data/RData/visiumCounts.RDS")
+```
+
+## Spatial Coordinates
+
+Loading Spatial coordinates of the tissue section.
+
+```{r}
+tissue.positions <- read.csv("data/visium/V1_Breast_cancer/spatial/tissue_positions_list.csv", 
+                             header=FALSE, col.names=c("Barcodes", "in_tissue", 
+                                                       "array_row", "array_col",
+                                                       "pxl_col_in_fullres", 
+                                                       "pxl_row_in_fullres"))
+```
+
+## Spatial Scale Factors
+
+Scale factors for the given three image formats transformations.
+
+```{r}
+library("rjson")
+scalefactors <- fromJSON(file="data/visium/V1_Breast_cancer/spatial/scalefactors_json.json")
+```
+
+
+## The VisiumExperiment class
+
+Creating the VisiumExperiment class within 10x Visium data and testing the show method.
+
+```{r}
+ve <- VisiumExperiment(rowData=features, colData=barcodes, 
+                           assays=c(counts=counts), 
+                           spatialCoords=tissue.positions,
+                           scaleFactors=scalefactors)
+ve
+```
+
+
+### Retrieving Spatial Coordinates
+
+The *spatialCoords* methods can be used to retrieve the spatial coordinates. 
+It can be used also to update the values.
+
+```{r}
+spatialCoords(ve)
+```
+
+### Number of array barcoded-spots covered by tissue
+
+The *isInTissue* method can be used to know which and how many spots are covered by the tissue.
+
+```{r}
+sum(isInTissue(ve))
+ve[isInTissue(ve)] 
+```
+
+
+### Plot Spots
+
+At this point we can plot the spots with the *plotSpots* function
+developed into the **spatzli** package (thanks Lukas Weber for converting your functions for working with VisiumExperiment).
+
+```{r}
+plotSpots(ve[, isInTissue(ve)])
+```
+
+
+### Annotating spots
+
+To annotate the spots we use the *SingleR* package with built-in reference.
+
+Because VisiumExperiment inherits from SingleCellExperiment, it automatically works
+with other packages such as *scater* and *SingleR*.
+
+```{r, cache=TRUE, eval=FALSE}
+rownames(ve) <- rowData(ve)$Feature_name
+ve <- scater::logNormCounts(ve)
+```
+
+
+```{r, cache=TRUE, eval=FALSE}
+hpca.se <- celldex::HumanPrimaryCellAtlasData()
+singlercat <-  SingleR(test = ve, ref = hpca.se, labels = hpca.se$label.main)
+# setting labels into the colData
+colData(ve)$labels <- singlercat$labels
+
+```
+
+#### loading annnotations
+
+To speed up this live session we load the previously computed SingleR annotations.
+
+```{r}
+singlercat <- readRDS("data/RData/singleRAnno.RDS")
+colData(ve)$labels <- singlercat$labels
+```
+
+
+### Plotting annotated spots
+
+We plot a matrix of inTissue spots colored by annotated labels.
+
+(Thanks *Andrea Sottosanti* for the plot code.)
+
+```{r}
+personalPalette <- c(brewer.pal(9, name = "Set1"),
+                     brewer.pal(9, name = "YlGnBu"))
+personalPalette[c(4,5)] <- personalPalette[c(5,4)]
+
+intisve <- ve[,isInTissue(ve)]
+
+dfplot <- data.frame(spatialCoords(intisve), colData(intisve))
+
+ggplot(dfplot, aes(pxl_row_in_fullres, -pxl_col_in_fullres, color = labels))+
+    geom_point(lwd=1.5)+theme_bw()+ scale_color_manual(values = personalPalette)
+```
+
+
+
+# Future Works and Discussions
+
+We plan to work on the implementation of 
+
++ **ExperimentHub** package for the **10x Visium** data collection
++ **coercion** of our classes with external works such as 
+  + Giotto software 
+  + Spatula package
+  + other visualization tools
++ Extending the class attributes and methods for **network** handling
++ Implementation of **specific analysis tasks** (e.g. clustering - Andrea Sottosanti) in dedicated packages
++ Implementing **novel visualization approaches** (overlay images, iSEE dedicated module)
+
+
+```{r, echo=FALSE, out.width="40%", out.height="40%", fig.align="center"}
+  knitr::include_graphics("imgs/SpatialExperimentSchemev2.png")
+```
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+
+
+# Bibliography

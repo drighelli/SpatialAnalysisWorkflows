@@ -1,0 +1,102 @@
+---
+title: "BreastVisumAnalysis"
+author: "Dario Righelli"
+date: "2/21/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Installation
+
+Installing and loading VisualExperiment class.
+
+```{r}
+library(devtools)
+install_github("drighelli/SpatialExperiment", ref="spatialExperiment")
+```
+
+
+```{r}
+library("SpatialExperiment")
+```
+
+
+# Data Loading
+
+Examples data files have been downloaded from the 10x site, [Human Breast Cancer](https://support.10xgenomics.com/spatial-gene-expression/datasets/1.1.0/V1_Breast_Cancer_Block_A_Section_1)
+
+## Features
+
+Loading features and count matrix.
+
+```{r}
+barcodes <- read.csv("data/visium/V1_Breast_cancer/raw_feature_bc_matrix/barcodes.tsv", sep="\t", 
+                     header=FALSE, col.names=c("Barcodes"))
+features <- read.csv("data/visium/V1_Breast_cancer/raw_feature_bc_matrix/features.tsv", sep="\t", 
+                     header=FALSE, col.names=c("Feature_ID", "Feature_name", 
+                                               "Feature_type"))
+library("Matrix")
+counts <- readMM(file="data/visium/V1_Breast_cancer/raw_feature_bc_matrix/matrix.mtx")
+```
+
+## Spatial Coordinates
+
+Loading Spatial coordinates of the tissue section.
+
+```{r}
+tissue.positions <- read.csv("data/visium/V1_Breast_cancer/spatial/tissue_positions_list.csv", 
+                             header=FALSE, col.names=c("Barcodes", "in_tissue", 
+                                                       "array_row", "array_col",
+                                                       "pxl_col_in_fullres", "pxl_row_in_fullres"))
+```
+
+## Spatial Scale Factors
+
+Scale factors for the given three image formats transformations.
+
+```{r}
+library("rjson")
+scalefactors <- fromJSON(file="data/visium/V1_Breast_cancer/spatial/scalefactors_json.json")
+```
+
+
+# VisiumExperiment
+
+## Creation
+
+Creating VisiumExperiment class within 10x Visium data and testing the show method.
+
+```{r}
+ve <- VisiumExperiment(rowData=features, colData=barcodes, 
+                           assays=c(counts=counts), 
+                           spatialCoords=tissue.positions,
+                           scaleFactors=scalefactors)
+ve
+```
+
+## Methods
+
+### Retrieving Spatial Coordinates
+
+The *spatialCoords* methods can be used to retrieve the spatial coordinates., 
+It can be used also to update the values.
+
+```{r}
+spatialCoords(ve)
+```
+
+### Number of array barcoded-spots covered by tissue
+
+The *isInTissue* method can be used to know which and how many spots are covered
+by the tissue.
+
+```{r}
+sum(isInTissue(ve))
+# ve[isInTissue(ve)] ## subset not defined yet
+```
+
