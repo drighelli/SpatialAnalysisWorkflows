@@ -1,0 +1,21 @@
+---
+title: "seqFISH+ subcellular"
+author: "Dario Righelli"
+date: "10/26/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# the file is encrypted, remember to decrypt with the following command in a linux console
+# system("ccdecrypt data/seqFISH+/subcellular/Pos0_647nm.csv.cpt")
+data <- data.table::fread(file="data/seqFISH+/subcellular/Pos0_647nm.csv")
+
+```
+
