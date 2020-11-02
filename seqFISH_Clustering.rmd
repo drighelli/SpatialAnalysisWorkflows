@@ -1,0 +1,53 @@
+---
+title: "seqFISH Clustering"
+author: "Dario Righelli"
+date: "11/2/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache=TRUE)
+```
+
+# Libraries
+
+```{r}
+library(SingleCellMultiModal)
+library(BiocNeighbors)
+```
+
+
+# Retrieving data
+
+```{r}
+mse <- SingleCellMultiModal::seqFISH(DataType="mouse_visual_cortex", 
+                        modes="*", dry.run=FALSE, version="2.0.0")
+spe <- experiments(mse)$seqFISH
+```
+
+
+```{r}
+spatialCoords(spe)
+```
+
+
+# Clustering
+
+```{r}
+colnames(assay(spe, withDimnames=FALSE)) <- spatialCoords(spe)$Cell_ID
+set.seed(321)
+# k = 9 because is nine into the data paper
+cellClust <- findKNN(t(assay(spe)), k=9)
+head(fout)
+
+```
+
+
+```{r}
+set.seed(321)
+spatClust <- findKNN(spatialCoords(spe)[-c(1,2)], k=9)
+
+```
+
