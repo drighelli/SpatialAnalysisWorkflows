@@ -15,6 +15,7 @@ knitr::opts_chunk$set(echo = TRUE, cache=TRUE)
 
 ```{r}
 library(SingleCellMultiModal)
+library(SpatialExperiment)
 library(BiocNeighbors)
 ```
 
@@ -36,18 +37,55 @@ spatialCoords(spe)
 # Clustering
 
 ```{r}
-colnames(assay(spe, withDimnames=FALSE)) <- spatialCoords(spe)$Cell_ID
-set.seed(321)
-# k = 9 because is nine into the data paper
-cellClust <- findKNN(t(assay(spe)), k=9)
-head(fout)
-
+library(scran)
+library(igraph)
+spe <- scater::logNormCounts(spe)
+speg <- buildSNNGraph(spe, k=9)
+spegcl <- cluster_louvain(speg)
 ```
 
 
 ```{r}
-set.seed(321)
-spatClust <- findKNN(spatialCoords(spe)[-c(1,2)], k=9)
+library(bluster)
+spat <- makeSNNGraph(as.matrix(spatialCoords(spe)[-c(1,2)]), k=9)
+spatcl <- cluster_louvain(spat)
+```
+
+```{r}
+library(Dune)
+library(ggplot2)
+library(dplyr)
+
+colData(spe)$louv_expr <- as.factor(spegcl$membership)
+colData(spe)$louv_spat <- as.factor(spatcl$membership)
+theme_set(theme_classic())
+ggplot(as.data.frame(cbind(colData(spe), spatialCoords(spe))), aes(x = x, y = y, col = class)) +
+  geom_point()
+
+df <- as.data.frame(cbind(colData(spe), spatialCoords(spe)))
+plist <- lapply(c("louv_expr", "louv_spat"), function(clus_algo){
+  p <- ggplot(df, aes_string(x = "x", y = "y", col = clus_algo)) +
+    geom_point(size = 1.5) +
+    # guides(color = FALSE) +
+    labs(title = clus_algo, col = "clusters") +
+    theme(legend.position = "bottom")
+  return(p)
+})
+library(gridExtra)
+grid.arrange(grobs=plist, nrow=1)
+
+plotARIs(df %>% select("louv_expr", "louv_spat"))
+
+dfmat <- cbind(spegcl$membership, spatcl$membership)
+colnames(dfmat) <- c("louv_expr", "louv_spat")
+merger <- Dune(clusMat = dfmat, verbose=TRUE)
+plotARIs(merger$currentMat)
+plotPrePost(merger)
+ConfusionPlot(merger$initialMat[, "louv_expr"], merger$currentMat[, "louv_expr"]) +   labs(x = "Before merging", y = "After merging")
+
+ConfusionPlot(merger$initialMat[, "louv_spat"], merger$currentMat[, "louv_spat"]) +   labs(x = "Before merging", y = "After merging")
+
+ARItrend(merger)
 
 ```
 

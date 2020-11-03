@@ -190,6 +190,8 @@ spatialCoordsNames(experiments(mse)$seqFISH)
 ```
 
 
+
+
 # VisiumExperiment class and Breast Cancer dataset
 
 Examples data files have been downloaded from the 10x Genomics website, [Human Breast Cancer](https://support.10xgenomics.com/spatial-gene-expression/datasets/1.1.0/V1_Breast_Cancer_Block_A_Section_1)
