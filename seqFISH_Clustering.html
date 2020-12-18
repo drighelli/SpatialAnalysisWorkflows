@@ -434,15 +434,15 @@ library(SpatialExperiment)</code></pre>
 <pre><code>## Working on: seqFISH_Coordinates</code></pre>
 <pre><code>## Working on: seqFISH_Counts</code></pre>
 <pre><code>## Working on: seqFISH_Labels</code></pre>
-<pre><code>## see ?SingleCellMultiModal and browseVignettes(&#39;SingleCellMultiModal&#39;) for documentation</code></pre>
+<pre><code>## see ?SingleCellMultiModal and browseVignettes('SingleCellMultiModal') for documentation</code></pre>
 <pre><code>## loading from cache</code></pre>
-<pre><code>## see ?SingleCellMultiModal and browseVignettes(&#39;SingleCellMultiModal&#39;) for documentation</code></pre>
+<pre><code>## see ?SingleCellMultiModal and browseVignettes('SingleCellMultiModal') for documentation</code></pre>
 <pre><code>## loading from cache</code></pre>
-<pre><code>## see ?SingleCellMultiModal and browseVignettes(&#39;SingleCellMultiModal&#39;) for documentation</code></pre>
+<pre><code>## see ?SingleCellMultiModal and browseVignettes('SingleCellMultiModal') for documentation</code></pre>
 <pre><code>## loading from cache</code></pre>
-<pre><code>## see ?SingleCellMultiModal and browseVignettes(&#39;SingleCellMultiModal&#39;) for documentation</code></pre>
+<pre><code>## see ?SingleCellMultiModal and browseVignettes('SingleCellMultiModal') for documentation</code></pre>
 <pre><code>## loading from cache</code></pre>
-<pre><code>## see ?SingleCellMultiModal and browseVignettes(&#39;SingleCellMultiModal&#39;) for documentation</code></pre>
+<pre><code>## see ?SingleCellMultiModal and browseVignettes('SingleCellMultiModal') for documentation</code></pre>
 <pre><code>## loading from cache</code></pre>
 <pre><code>## ExperimentList contains data.frame or DataFrame,
 ##   potential for errors with mixed data types</code></pre>
@@ -468,23 +468,23 @@ library(SpatialExperiment)</code></pre>
 <pre class="r"><code>library(scran)
 library(igraph)</code></pre>
 <pre><code>## 
-## Attaching package: &#39;igraph&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:GenomicRanges&#39;:
+## Attaching package: 'igraph'</code></pre>
+<pre><code>## The following object is masked from 'package:GenomicRanges':
 ## 
 ##     union</code></pre>
-<pre><code>## The following object is masked from &#39;package:IRanges&#39;:
+<pre><code>## The following object is masked from 'package:IRanges':
 ## 
 ##     union</code></pre>
-<pre><code>## The following object is masked from &#39;package:S4Vectors&#39;:
+<pre><code>## The following object is masked from 'package:S4Vectors':
 ## 
 ##     union</code></pre>
-<pre><code>## The following objects are masked from &#39;package:BiocGenerics&#39;:
+<pre><code>## The following objects are masked from 'package:BiocGenerics':
 ## 
 ##     normalize, path, union</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+<pre><code>## The following objects are masked from 'package:stats':
 ## 
 ##     decompose, spectrum</code></pre>
-<pre><code>## The following object is masked from &#39;package:base&#39;:
+<pre><code>## The following object is masked from 'package:base':
 ## 
 ##     union</code></pre>
 <pre class="r"><code>spe &lt;- scater::logNormCounts(spe)
@@ -492,8 +492,8 @@ speg &lt;- buildSNNGraph(spe, k=9)
 spegcl &lt;- cluster_louvain(speg)</code></pre>
 <pre class="r"><code>library(bluster)</code></pre>
 <pre><code>## 
-## Attaching package: &#39;bluster&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:scran&#39;:
+## Attaching package: 'bluster'</code></pre>
+<pre><code>## The following objects are masked from 'package:scran':
 ## 
 ##     neighborsToKNNGraph, neighborsToSNNGraph</code></pre>
 <pre class="r"><code>spat &lt;- makeSNNGraph(as.matrix(spatialCoords(spe)[-c(1,2)]), k=9)
@@ -502,35 +502,35 @@ spatcl &lt;- cluster_louvain(spat)</code></pre>
 library(ggplot2)
 library(dplyr)</code></pre>
 <pre><code>## 
-## Attaching package: &#39;dplyr&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:igraph&#39;:
+## Attaching package: 'dplyr'</code></pre>
+<pre><code>## The following objects are masked from 'package:igraph':
 ## 
 ##     as_data_frame, groups, union</code></pre>
-<pre><code>## The following object is masked from &#39;package:Biobase&#39;:
+<pre><code>## The following object is masked from 'package:Biobase':
 ## 
 ##     combine</code></pre>
-<pre><code>## The following objects are masked from &#39;package:GenomicRanges&#39;:
+<pre><code>## The following objects are masked from 'package:GenomicRanges':
 ## 
 ##     intersect, setdiff, union</code></pre>
-<pre><code>## The following object is masked from &#39;package:GenomeInfoDb&#39;:
+<pre><code>## The following object is masked from 'package:GenomeInfoDb':
 ## 
 ##     intersect</code></pre>
-<pre><code>## The following objects are masked from &#39;package:IRanges&#39;:
+<pre><code>## The following objects are masked from 'package:IRanges':
 ## 
 ##     collapse, desc, intersect, setdiff, slice, union</code></pre>
-<pre><code>## The following objects are masked from &#39;package:S4Vectors&#39;:
+<pre><code>## The following objects are masked from 'package:S4Vectors':
 ## 
 ##     first, intersect, rename, setdiff, setequal, union</code></pre>
-<pre><code>## The following objects are masked from &#39;package:BiocGenerics&#39;:
+<pre><code>## The following objects are masked from 'package:BiocGenerics':
 ## 
 ##     combine, intersect, setdiff, union</code></pre>
-<pre><code>## The following object is masked from &#39;package:matrixStats&#39;:
+<pre><code>## The following object is masked from 'package:matrixStats':
 ## 
 ##     count</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+<pre><code>## The following objects are masked from 'package:stats':
 ## 
 ##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
+<pre><code>## The following objects are masked from 'package:base':
 ## 
 ##     intersect, setdiff, setequal, union</code></pre>
 <pre class="r"><code>colData(spe)$louv_expr &lt;- as.factor(spegcl$membership)
@@ -550,14 +550,14 @@ plist &lt;- lapply(c(&quot;louv_expr&quot;, &quot;louv_spat&quot;), function(clu
 })
 library(gridExtra)</code></pre>
 <pre><code>## 
-## Attaching package: &#39;gridExtra&#39;</code></pre>
-<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## Attaching package: 'gridExtra'</code></pre>
+<pre><code>## The following object is masked from 'package:dplyr':
 ## 
 ##     combine</code></pre>
-<pre><code>## The following object is masked from &#39;package:Biobase&#39;:
+<pre><code>## The following object is masked from 'package:Biobase':
 ## 
 ##     combine</code></pre>
-<pre><code>## The following object is masked from &#39;package:BiocGenerics&#39;:
+<pre><code>## The following object is masked from 'package:BiocGenerics':
 ## 
 ##     combine</code></pre>
 <pre class="r"><code>grid.arrange(grobs=plist, nrow=1)</code></pre>

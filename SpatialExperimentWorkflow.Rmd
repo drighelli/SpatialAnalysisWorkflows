@@ -289,10 +289,13 @@ ve <- scater::logNormCounts(ve)
 
 
 ```{r, eval=FALSE}
-hpca.se <- celldex::HumanPrimaryCellAtlasData()
-### singlercat <-  SingleR(test = ve, ref = hpca.se, labels = hpca.se$label.main)
+# hpca.se <- celldex::HumanPrimaryCellAtlasData()
+# singlercat <-  SingleR(test = ve, ref = hpca.se, labels = hpca.se$label.main)
+# ccle_se_ss <- logNormCounts(ccle_se_ss)
+# singlercat <-  SingleR(test = ve, ref = ccle_se_ss, labels = ccle_se_ss$Site_Primary)
+# save(singlercat, file="singleR_with_tumor_annotation.RData")
 # setting labels into the colData
-colData(ve)$labels <- singlercat$labels
+ # colData(ve)$labels <- singlercat$labels
 
 ```
 
@@ -314,7 +317,8 @@ We plot a matrix of inTissue spots colored by annotated labels.
 
 ```{r}
 personalPalette <- c(brewer.pal(9, name = "Set1"),
-                     brewer.pal(9, name = "YlGnBu"))
+                     brewer.pal(9, name = "YlGnBu"),
+                     brewer.pal(8, name = "Set2"))
 personalPalette[c(4,5)] <- personalPalette[c(5,4)]
 
 intisve <- ve[,isInTissue(ve)]
